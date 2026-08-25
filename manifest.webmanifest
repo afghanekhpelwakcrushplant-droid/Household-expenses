@@ -1,0 +1,18 @@
+{
+  "name": "مصارف خانه",
+  "short_name": "مصارف خانه",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F6FAFA",
+  "theme_color": "#17365D",
+  "dir": "rtl",
+  "lang": "fa",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
