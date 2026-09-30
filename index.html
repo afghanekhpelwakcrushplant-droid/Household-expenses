@@ -521,7 +521,9 @@ textarea{
 
     <div class="actions">
       <button class="light" onclick="restoreBackup()">↩️ بازیابی آخرین پشتیبان</button>
+      <button class="gold" onclick="document.getElementById('backupFile').click()">📂 ورود پشتیبان</button>
       <button class="danger" onclick="clearAll()">حذف همه اطلاعات</button>
+      <input id="backupFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackupFile(this)">
     </div>
 
     <div class="note-box">
@@ -1736,6 +1738,65 @@ function downloadBackup(){
   setTimeout(() => URL.revokeObjectURL(url),1000);
 
   toast("نسخه پشتیبان ذخیره شد");
+}
+
+
+function importBackupFile(input){
+
+  const file = input.files && input.files[0];
+
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(){
+
+    try{
+
+      const payload = JSON.parse(reader.result);
+
+      const data = Array.isArray(payload)
+        ? payload
+        : payload.expenses;
+
+      if(!Array.isArray(data)){
+        toast("فایل پشتیبان معتبر نیست");
+        return;
+      }
+
+      if(!confirm("اطلاعات این فایل جایگزین اطلاعات فعلی شود؟")){
+        return;
+      }
+
+      save(data);
+
+      if(
+        payload &&
+        Array.isArray(payload.categories) &&
+        payload.categories.length
+      ){
+        saveCategories(payload.categories);
+      }
+
+      renderCategorySelect();
+      render();
+
+      toast("اطلاعات پشتیبان وارد شد");
+
+    }catch(e){
+
+      toast("فایل پشتیبان قابل خواندن نیست");
+
+    }finally{
+
+      input.value = "";
+
+    }
+
+  };
+
+  reader.readAsText(file);
+
 }
 
 
