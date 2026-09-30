@@ -531,6 +531,14 @@ textarea{
       این محدودیت برای جلوگیری از خراب شدن اطلاعات قبلی اعمال شده است.
     </div>
 
+    <div class="category-box">
+      <div class="small" style="margin-bottom:7px">وضعیت ذخیره‌سازی این دستگاه</div>
+      <div id="storageStatus" class="small">در حال بررسی...</div>
+      <div class="actions">
+        <button class="light" onclick="checkStorageStatus()">🔎 بررسی دوباره</button>
+      </div>
+    </div>
+
   </section>
 
   <!-- آخرین هزینه‌ها -->
@@ -1741,6 +1749,26 @@ function downloadBackup(){
 }
 
 
+function checkStorageStatus(){
+  let count=0, backupCount=0, raw=null, backupRaw=null;
+  try{
+    raw=localStorage.getItem(key);
+    backupRaw=localStorage.getItem("home_expenses_backup_v1");
+    const data=raw ? JSON.parse(raw) : [];
+    const backup=backupRaw ? JSON.parse(backupRaw) : [];
+    count=Array.isArray(data) ? data.length : 0;
+    backupCount=Array.isArray(backup) ? backup.length : 0;
+  }catch(e){}
+  const el=document.getElementById("storageStatus");
+  if(!el) return;
+  el.innerHTML =
+    "رکوردهای فعلی: <b>"+fa(count)+"</b><br>"+
+    "رکوردهای پشتیبان داخلی: <b>"+fa(backupCount)+"</b><br>"+
+    (count
+      ? "اطلاعات فعلی روی همین دستگاه قابل خواندن است."
+      : "در این دستگاه رکوردی با کلید اصلی پیدا نشد؛ چیزی را پاک نکنید.");
+}
+
 function importBackupFile(input){
 
   const file = input.files && input.files[0];
@@ -1927,6 +1955,8 @@ document.addEventListener(
     */
 
     renderCategorySelect();
+
+    checkStorageStatus();
 
 
     /*
