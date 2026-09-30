@@ -516,6 +516,11 @@ textarea{
 
     <div class="actions">
       <button class="secondary" onclick="downloadCSV()">خروجی Excel (CSV)</button>
+      <button class="success" onclick="downloadBackup()">💾 پشتیبان اطلاعات</button>
+    </div>
+
+    <div class="actions">
+      <button class="light" onclick="restoreBackup()">↩️ بازیابی آخرین پشتیبان</button>
       <button class="danger" onclick="clearAll()">حذف همه اطلاعات</button>
     </div>
 
@@ -1694,6 +1699,83 @@ function downloadCSV(){
     1000
   );
 
+}
+
+
+/* =========================================================
+   پشتیبان‌گیری و بازیابی
+========================================================= */
+
+function downloadBackup(){
+
+  const data = get();
+
+  const payload = {
+    app: "مصارف خانه",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    expenses: data,
+    categories: getCategories()
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(payload,null,2)],
+    {type:"application/json;charset=utf-8"}
+  );
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "پشتیبان-مصارف-خانه.json";
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+
+  toast("نسخه پشتیبان ذخیره شد");
+}
+
+
+function restoreBackup(){
+
+  let raw = null;
+
+  try{
+    raw = localStorage.getItem("home_expenses_backup_v1");
+  }catch(e){}
+
+  if(!raw){
+    toast("پشتیبان قبلی روی این دستگاه پیدا نشد");
+    return;
+  }
+
+  let data;
+
+  try{
+    data = JSON.parse(raw);
+  }catch(e){
+    toast("پشتیبان قابل خواندن نیست");
+    return;
+  }
+
+  if(!Array.isArray(data)){
+    toast("پشتیبان معتبر نیست");
+    return;
+  }
+
+  if(!confirm("آخرین پشتیبان روی اطلاعات فعلی جایگزین شود؟")){
+    return;
+  }
+
+  save(data);
+  syncCategories();
+  renderCategorySelect();
+  render();
+
+  toast("اطلاعات از آخرین پشتیبان بازیابی شد");
 }
 
 
