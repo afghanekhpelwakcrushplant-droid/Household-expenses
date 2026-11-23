@@ -1,4 +1,4 @@
-const CACHE = 'masaref-khane-v5';
+const CACHE = 'masaref-khane-professional-v1';
 
 const ASSETS = [
   './',
