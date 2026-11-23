@@ -432,6 +432,8 @@ textarea{
     <div class="grid"><button class="primary" onclick="goSection('form')">＋ ثبت هزینه</button><button class="secondary" onclick="goSection('budget')">بودجه و مانده</button></div>
   </div>
 
+  <section class="card" id="reminderCard"><div class="panel-title">یادآور ثبت مصارف</div><label>ساعت یادآوری روزانه</label><input id="reminderTime" type="time" value="21:00"><div class="actions"><button class="light" onclick="enableReminder()">فعال‌سازی یادآور</button></div><div class="small" id="reminderStatus">یادآور هنگام باز بودن برنامه بررسی می‌شود.</div></section>
+
   <!-- فرم ثبت هزینه -->
   <section id="form" class="card hidden">
 
@@ -1943,6 +1945,11 @@ function toast(text){
 
 
 const budgetKey="home_expense_budget_v1", shoppingKey="home_expense_shopping_v1";
+
+const reminderKey="home_expense_reminder_v1";
+function enableReminder(){const t=document.getElementById("reminderTime").value;if(!t){toast("ساعت یادآوری را انتخاب کنید");return}localStorage.setItem(reminderKey,t);if("Notification" in window&&Notification.permission==="default"){Notification.requestPermission().then(()=>startReminder())}else startReminder()}
+function startReminder(){const t=localStorage.getItem(reminderKey);const s=document.getElementById("reminderStatus");if(s)s.textContent=t?"یادآور روزانه روی "+t+" تنظیم شده است. برای دریافت آن، برنامه باید باز باشد.":"یادآوری خاموش است.";if(window.__expenseReminderTimer)clearInterval(window.__expenseReminderTimer);if(!t)return;window.__expenseReminderTimer=setInterval(()=>{const d=new Date(),now=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"),stamp=d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate();if(now===t&&localStorage.getItem("home_expense_reminder_last")!==stamp){localStorage.setItem("home_expense_reminder_last",stamp);const msg="هزینه‌های امروز را در مصارف خانه ثبت کنید.";if("Notification" in window&&Notification.permission==="granted")new Notification("یادآور مصارف خانه",{body:msg});else toast(msg)}},30000)}
+
 function goSection(which,button){["form","report","budget","shopping"].forEach(id=>document.getElementById(id)?.classList.toggle("hidden",id!==which));document.getElementById("recentCard")?.classList.toggle("hidden",which!=="home");document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));if(button)button.classList.add("active");if(which==="report")render();if(which==="budget")renderBudget();if(which==="shopping")renderShopping();window.scrollTo({top:0,behavior:"smooth"})}
 function readBudget(){try{return JSON.parse(localStorage.getItem(budgetKey)||"null")}catch(e){return null}}
 function saveBudget(){const amount=Number(document.getElementById("budgetAmount").value),start=document.getElementById("budgetStart").value,end=document.getElementById("budgetEnd").value;if(!Number.isFinite(amount)||amount<=0||!start||!end||end<start){toast("مبلغ و تاریخ معتبر وارد کنید");return}localStorage.setItem(budgetKey,JSON.stringify({amount,start,end}));renderBudget();toast("بودجه ذخیره شد")}
@@ -2004,6 +2011,7 @@ document.addEventListener(
     render();
     renderBudget();
     renderShopping();
+    const rt=localStorage.getItem(reminderKey);if(rt)document.getElementById("reminderTime").value=rt;startReminder();
 
   }
 );
